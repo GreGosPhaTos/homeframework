@@ -1,4 +1,4 @@
 HomeFramework
 =============
 
-A homemade framework
+A homemade framework in PHP
