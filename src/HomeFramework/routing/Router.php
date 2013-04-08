@@ -12,13 +12,8 @@ class Router
 
     private $routeFilePath;
 
-    /**
-     *
-     * @throws \RuntimeException
-     * @return unknown
-     */
     public function getController() {
-        // @todo externaliser le reader dans un classe
+        // @todo externaliser le reader dans une classe
         $dom = new \DOMDocument;
         $dom->load($this->routeFilePath);
 
