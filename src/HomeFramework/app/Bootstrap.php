@@ -27,20 +27,25 @@ class Bootstrap implements SplObserver {
     protected function InitializeRouter() {
         $routerBuilder = new \HomeFramework\routing\RouterBuilder();
         $routerBuilder
-            ->setRequest($this->container->get("HttpRequest"))
-            ->setApplication($this->container->get("Application"));
+            ->setContainer($this->container);
 
         return $routerBuilder->build();
     }
 
+    /**
+     * @return \HomeFramework\formatter\XMLFormatter
+     */
     protected function InitializeRouterFormatter() {
         // @todo ? conf ?
-        $xmlFile = "";
-        $routerFormater = new \HomeFramework\formatter\XMLFormatter($xmlFile);
+        $xmlFile = __DIR__.'/../apps/'.$this->container->get("Application")->name().'/config/routes.xml';
+        $routerFormatter = new \HomeFramework\formatter\XMLFormatter($xmlFile);
 
-        return $routerFormater;
+        return $routerFormatter;
     }
 
+    /**
+     *
+     */
     protected function InitializePage() {
         $routerBuilder = new \HomeFramework\page\Page();
         $routerBuilder->setRequest($this->container->get("HttpRequest"));

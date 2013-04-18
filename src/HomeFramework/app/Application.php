@@ -37,6 +37,15 @@ abstract class Application {
 	}
 
     /**
+     * Returns the application name.
+     *
+     * @return string
+     */
+    public function name() {
+        return $this->name;
+    }
+
+    /**
      *
      * @return \HomeFramework\container\Container
      */
