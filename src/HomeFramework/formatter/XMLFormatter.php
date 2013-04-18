@@ -1,8 +1,8 @@
 <?php
-namespace HomeFramework\formater;
+namespace HomeFramework\formatter;
 
 
-class XMLFormater implements IFormater {
+class XMLFormatter implements IFormatter {
     /**
      * @var array|string
      */

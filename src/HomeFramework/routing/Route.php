@@ -20,23 +20,6 @@ class Route
     protected $vars = array();
 
     /**
-     * Construct
-     *
-     * @param String $url       Request url
-     * @param String $module    Application module
-     * @param String $action    Action on the Controller
-     * @param array $varsNames Vars
-     *
-     * @return \HomeFramework\routing\Route
-     */
-    public function __construct($url, $module, $action, array $varsNames) {
-        $this->setUrl($url);
-        $this->setModule($module);
-        $this->setAction($action);
-        $this->setVarsNames($varsNames);
-    }
-
-    /**
      * Returns if vars is empty
      *
      * @return bool

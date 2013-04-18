@@ -1,8 +1,8 @@
 <?php
-namespace HomeFramework\formater;
+namespace HomeFramework\formatter;
 
 
-interface IFormater {
+interface IFormatter {
     /**
      * @param array|string $data
      */

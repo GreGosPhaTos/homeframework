@@ -1,5 +1,5 @@
 <?php
-namespace \HomeFramework\container;
+namespace HomeFramework\container;
 
 
 /**
@@ -32,6 +32,8 @@ class Container implements \HomeFramework\container\IContainer, SplSubject {
      *
      * @param $service
      * @param $object
+     *
+     * @return mixed|void
      */
     public function set($service, &$object) {
         if ($this->container[$service] !== $object) {
@@ -49,7 +51,7 @@ class Container implements \HomeFramework\container\IContainer, SplSubject {
     /**
      * Attach a new observer
      *
-     * @param SplObserver $observer
+     * @param \HomeFramework\container\SplObserver|\SplObserver $observer
      *
      * @return void
      */
@@ -63,7 +65,7 @@ class Container implements \HomeFramework\container\IContainer, SplSubject {
     /**
      * Detach an observer
      *
-     * @param SplObserver $observer
+     * @param \HomeFramework\container\SplObserver|\SplObserver $observer
      *
      * @return void
      */

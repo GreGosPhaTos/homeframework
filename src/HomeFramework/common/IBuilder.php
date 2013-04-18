@@ -4,17 +4,18 @@ namespace HomeFramework\common;
 interface Ibuilder {
 
     /**
-     * Setting the container
+     * Sets the application container
      *
-     * @return void
+     * @param \HomeFramework\container\Container  $container
+     *
+     * @return mixed
      */
-
-    abstract public function setContainer($container);
+    public function setContainer(\HomeFramework\container\IContainer $container);
 
     /**
      * Build the object
      *
      * @return void
      */
-    abstract public function build();
+    public function build();
 }

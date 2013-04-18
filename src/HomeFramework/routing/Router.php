@@ -20,25 +20,36 @@ class Router
 
     /**
      */
-    private $formater;
+    private $formatter;
 
     public function getController() {
-        $parser = ParserFactory::getParser($this->format);
-        $parser->parse;
 
-        // @todo externaliser le reader dans une classe
     }
 
     /**
-     * Set the application attribute
+     * Sets the route entity
      *
-     * @param HomeFramework\app\Application $application
+     * @param Route $route
      */
-    public function setApp (HomeFramework\app\Application $application) {
-        $this->application = $application;
+    public function setRoute (\HomeFramework\routing\Route $route) {
+        $this->route = $route;
     }
 
-    public function setHTTPRequest (HomeFramework\http\HTTPRequest $httpRequest) {
+    /**
+     * Sets the http request
+     *
+     * @param \HomeFramework\http\HTTPRequest $httpRequest
+     */
+    public function setHTTPRequest (\HomeFramework\http\HTTPRequest $httpRequest) {
         $this->httpRequest = $httpRequest;
+    }
+
+    /**
+     * Sets the formatter
+     *
+     * @param \HomeFramework\formatter\Iformatter $formatter
+     */
+    public function setFormatter (\HomeFramework\formatter\Iformatter $formatter) {
+        $this->formatter = $formatter;
     }
 }

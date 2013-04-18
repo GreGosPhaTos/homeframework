@@ -6,31 +6,34 @@ namespace HomeFramework\routing;
  *
  * @package HomeFramework\routing
  */
-class RouterBuilder implements HomeFramework\common\IBuilder {
+class RouterBuilder implements \HomeFramework\common\IBuilder {
 
     /**
-     * @var HomeFramework\container\Container
+     * @var \HomeFramework\container\Container
      */
     private $container;
 
     /**
-     *
-     * @param HomeFramework\container\Container $container
-     */
-    public function setContainer(HomeFramework\container\Container $container) {
-        $this->container = $container;
-    }
-
-    /**
-     * @return HomeFramework\routing\Router
+     * @return \HomeFramework\routing\Router
      */
     public function build() {
-        $router = new HomeFramework\routing\Router();
-
+        $router = new \HomeFramework\routing\Router();
         $router
-            ->setApp($this->container->get('Application'))
+            ->setRoute(new \HomeFramework\routing\Route())
+            ->setFormatter($this->container->get('RouterFormatter'))
             ->setRequest($this->container->get('HTTPRequest'));
 
         return $router;
+    }
+
+    /**
+     * Sets the application container
+     *
+     * @param $container
+     *
+     * @return mixed
+     */
+    public function setContainer(\HomeFramework\container\IContainer $container) {
+        $this->container = $container;
     }
 }

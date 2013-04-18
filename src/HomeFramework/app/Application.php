@@ -9,7 +9,7 @@ namespace HomeFramework\app;
 abstract class Application {
 
     /**
-     * @var HomeFramework\container\Container
+     * @var \HomeFramework\container\Container
      */
     protected $container;
 
@@ -22,7 +22,7 @@ abstract class Application {
      *
      */
     public function __construct() {
-	    $this->container = new HomeFramework\container\Container();
+	    $this->container = new \HomeFramework\container\Container();
 	    $this->name = "";
 	}
 
@@ -38,7 +38,7 @@ abstract class Application {
 
     /**
      *
-     * @return HomeFramework\container\Container
+     * @return \HomeFramework\container\Container
      */
     public function getContainer() {
 	    return $this->container;

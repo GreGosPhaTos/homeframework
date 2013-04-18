@@ -1,10 +1,21 @@
 <?php
-namespace \HomeFramework\container;
+namespace HomeFramework\container;
 
 interface IContainer {
 
+    /**
+     * @param $service
+     *
+     * @return mixed
+     */
     public function get($service);
 
-    public function set($service, $callback);
+    /**
+     * @param $service
+     * @param $object
+     *
+     * @return mixed
+     */
+    public function set($service, &$object);
 
 }
