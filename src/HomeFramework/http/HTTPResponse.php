@@ -1,8 +1,7 @@
 <?php
-    namespace lib;
+    namespace HomeFramework\http;
     
-    class HTTPResponse extends ApplicationComponent
-    {
+    class HTTPResponse {
         protected $page;
         
         public function addHeader($header)
