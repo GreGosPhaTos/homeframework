@@ -5,6 +5,7 @@ use HomeFramework\http;
 
 class HTTPRequest
 {
+
     /**
      * Get the request data
      *

@@ -35,28 +35,14 @@ class Router
             }
 
             $this->route->setUrl($route['url']);
-            $this->route->setUrl($route['module']);
-            $this->route->setUrl($route['action']);
+            $this->route->setModule($route['module']);
+            $this->route->setAction($route['action']);
 
-            new Route($route->getAttribute('url'), $route->getAttribute('module'), $route->getAttribute('action'), $vars));
-        }
-
-        try
-        {
-            // On récupère la route correspondante à l'URL.
-            $matchedRoute = $router->getRoute($this->httpRequest->requestURI());
-        }
-        catch (\RuntimeException $e)
-        {
-            if ($e->getCode() == \Library\Router::NO_ROUTE)
-            {
-                // Si aucune route ne correspond, c'est que la page demandée n'existe pas.
-                $this->httpResponse->redirect404();
-            }
+            new Route($route->getAttribute('url'), $route->getAttribute('module'), $route->getAttribute('action'), $vars);
         }
 
         // On ajoute les variables de l'URL au tableau $_GET.
-        $_GET = array_merge($_GET, $matchedRoute->vars());
+        $this->httpRequest-> = array_merge($_GET, $this->route->vars());
 
         // On instancie le contrôleur.
         $controllerClass = 'Applications\\'.$this->name.'\\Modules\\'.$matchedRoute->module().'\\'.$matchedRoute->module().'Controller';
