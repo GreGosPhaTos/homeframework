@@ -9,11 +9,6 @@ namespace HomeFramework\routing;
 class Router
 {
     /**
-     * @var \HomeFramework\routing\Route $route
-     */
-    private $route;
-
-    /**
      * @var \HomeFramework\http\HTTPRequest
      */
     private $httpRequest;
@@ -23,40 +18,43 @@ class Router
      */
     private $formatter;
 
-    public function getController() {
-        $routeConfiguration = $this->formatter->toArray();
-        $routes = $routeConfiguration['route'];
+    /**
+     * @throws \RuntimeException
+     * @throws \HttpRequestException
+     * @return mixed
+     */
+    public function getRoute() {
+        $routes = $this->formatter->toArray();
+        $routeEntity = null;
 
-        foreach ($routes as $route) {
-            $vars = array();
-
-            if (isset($route['@vars'])) {
-                $vars = $route['@vars'];
-            }
-
-            $this->route->setUrl($route['url']);
-            $this->route->setModule($route['module']);
-            $this->route->setAction($route['action']);
-
-            new Route($route->getAttribute('url'), $route->getAttribute('module'), $route->getAttribute('action'), $vars);
+        if (!isset($routes['route'])) {
+            throw new \RuntimeException("la configuration de la route est erronée.");
         }
 
-        // On ajoute les variables de l'URL au tableau $_GET.
-        $this->httpRequest-> = array_merge($_GET, $this->route->vars());
+        foreach ($routes['route'] as $route) {
+            if (preg_match('/^\/'.$route['@attributes']['url'].'$/', $this->httpRequest->getRequestURI(), $matches)) {
+                $routeEntity = new Route();
+                if (isset($route['@attributes']['vars'])) {
+                    $i = 1;
+                    foreach (explode(',', $route['@attributes']['vars']) as $varName) {
+                        $vars[$varName] = $matches[$i];
+                        $i++;
+                    }
+                }
 
-        // On instancie le contrôleur.
-        $controllerClass = 'Applications\\'.$this->name.'\\Modules\\'.$matchedRoute->module().'\\'.$matchedRoute->module().'Controller';
-        return new $controllerClass($this, $matchedRoute->module(), $matchedRoute->action());
+                $routeEntity->setUrl($route['@attributes']['url']);
+                $routeEntity->setModule($route['@attributes']['module']);
+                $routeEntity->setAction($route['@attributes']['action']);
+                break 1;
+            }
+        }
 
-    }
+        if (is_null($routeEntity)) {
+            throw new \HttpRequestException("Pas de route disponible.");
+        }
 
-    /**
-     * Sets the route entity
-     *
-     * @param Route $route
-     */
-    public function setRoute (\HomeFramework\routing\Route $route) {
-        $this->route = $route;
+        array_merge($_GET, $routeEntity->vars());
+        return $this->route;
     }
 
     /**

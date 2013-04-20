@@ -15,8 +15,6 @@ class Route
 
     protected $url;
 
-    protected $varsNames;
-
     protected $vars = array();
 
     /**
@@ -26,20 +24,6 @@ class Route
      */
     public function hasVars() {
         return !empty($this->varsNames);
-    }
-
-    /**
-     *
-     *
-     * @param String $url
-     * @return bool
-     */
-    public function match($url) {
-        if (preg_match('`^' . $this->url . '$`', $url, $matches)) {
-            return $matches;
-        } else {
-            return false;
-        }
     }
 
     /**
@@ -70,13 +54,6 @@ class Route
     }
 
     /**
-     * @param array $varsNames
-     */
-    public function setVarsNames(array $varsNames) {
-        $this->varsNames = $varsNames;
-    }
-
-    /**
      * @param array $vars
      */
     public function setVars(array $vars) {
@@ -102,12 +79,5 @@ class Route
      */
     public function vars() {
         return $this->vars;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function varsNames() {
-        return $this->varsNames;
     }
 }

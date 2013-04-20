@@ -19,7 +19,6 @@ class RouterBuilder implements \HomeFramework\common\IBuilder {
     public function build() {
         $router = new \HomeFramework\routing\Router();
         $router
-            ->setRoute(new \HomeFramework\routing\Route())
             ->setFormatter($this->container->get('RouterFormatter'))
             ->setRequest($this->container->get('HTTPRequest'));
 

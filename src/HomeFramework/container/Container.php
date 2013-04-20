@@ -7,7 +7,7 @@ namespace HomeFramework\container;
  *
  *
  */
-class Container implements \HomeFramework\container\IContainer, SplSubject {
+class Container implements \HomeFramework\common\IAccess, SplSubject {
 
     /**
      * @var array
@@ -35,13 +35,16 @@ class Container implements \HomeFramework\container\IContainer, SplSubject {
      *
      * @return mixed|void
      */
-    public function set($service, &$object) {
+    public function set($service, $object) {
         if ($this->container[$service] !== $object) {
             unset($this->container[$service]);
             $this->container[$service] = $object;
         }
     }
 
+    /**
+     * @param string $service
+     */
     public function notify($service = "") {
         foreach ($this->observers as $observer) {
             $observer->update($service);

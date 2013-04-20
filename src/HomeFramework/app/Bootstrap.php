@@ -36,11 +36,28 @@ class Bootstrap implements SplObserver {
      * @return \HomeFramework\formatter\XMLFormatter
      */
     protected function InitializeRouterFormatter() {
-        // @todo ? conf ?
-        $xmlFile = __DIR__.'/../apps/'.$this->container->get("Application")->name().'/config/routes.xml';
-        $routerFormatter = new \HomeFramework\formatter\XMLFormatter($xmlFile);
+        $config = $this->container->get('DefaultConfiguration');
+        $routeConfig = $config->get('route');
+        $routerFormatterClass = "\\HomeFramework\\formatter\\".$routeConfig['route']['']."Formatter";
+        $routerFormatter = new $routerFormatterClass($routeConfig['file']);
 
         return $routerFormatter;
+    }
+
+    /**
+     * @return \HomeFramework\formatter\XMLFormatter
+     */
+    protected function InitializeDefaultConfiguration() {
+        // Default values
+        $configureFormatter = new \HomeFramework\formatter\XMLFormatter(__DIR__."../app.xml");
+        $config = new \HomeFramework\config\Configurator($configureFormatter);
+        $config->configure();
+        // @TODO externaliser dans un config
+        $defaultConfDir = __DIR__.'/../apps/'.$this->container->get("Application")->name().'/config';
+        $defaultRouteFile = $defaultConfDir."/routes.xml";
+        $config->set("route", array("file" => $defaultRouteFile));
+
+        return $config;
     }
 
     /**

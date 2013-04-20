@@ -26,14 +26,30 @@ abstract class Application {
 	    $this->name = "";
 	}
 
+    public function __destruct() {
+        $this->shutDown();
+    }
+
+    /**
+     *
+     */
+    protected function beforeRun() {
+        // Bootstrap par défaut
+        //$this->container->set("Application", $this);
+        $this->container->attach(new Bootstrap($this->container));
+    }
+
+    protected function shutDown() {
+        exit;
+    }
+
     /**
      * Run the application
      * @return void
      */
-    public function run() {
-	    // Bootstrap par défaut
-	    $this->container->set("Application", $this);
-		$this->container->attach(new Bootstrap($this->container));
+    final public function run() {
+	    $this->beforeRun();
+        FrontDispatcher::dispatch($this);
 	}
 
     /**
