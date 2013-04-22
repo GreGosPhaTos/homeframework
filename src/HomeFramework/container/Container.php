@@ -20,11 +20,10 @@ class Container implements \HomeFramework\common\IAccess, SplSubject {
     private $observers = array();
 
     public function get($service) {
-        if(isset($this->container[$service]) && is_object($this->container[$service])) {
-            return $this->container[$service];
-        } else {
+        if(!isset($this->container[$service])) {
             $this->notify($service);
         }
+        return $this->container[$service];
     }
 
     /**
@@ -33,7 +32,7 @@ class Container implements \HomeFramework\common\IAccess, SplSubject {
      * @param $service
      * @param $object
      *
-     * @return mixed|void
+     * @return void
      */
     public function set($service, $object) {
         if ($this->container[$service] !== $object) {
@@ -44,11 +43,17 @@ class Container implements \HomeFramework\common\IAccess, SplSubject {
 
     /**
      * @param string $service
+     *
+     * @return bool
+     * @throws \RuntimeException
      */
     public function notify($service = "") {
         foreach ($this->observers as $observer) {
-            $observer->update($service);
+            if ($observer->update($service)) {
+                return true;
+            }
         }
+        throw new \RuntimeException("Aucun service " . $service . " n' a été trouvé");
     }
 
     /**

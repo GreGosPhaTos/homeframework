@@ -68,13 +68,18 @@ class Bootstrap implements SplObserver {
         $routerBuilder->setRequest($this->container->get("HttpRequest"));
     }
 
+    /**
+     * @param $serviceName
+     *
+     * @return bool
+     */
     public function update($serviceName) {
-        $function = $this->Initialize.ucfirst($serviceName);
-        if (!is_callable($this->Initialize.ucfirst($serviceName))) {
-            throw new \RuntimeException('La fonction '.$function. ' n\'existe pas.');
+        $service = $this->Initialize.ucfirst($serviceName);
+        if (is_callable($service)) {
+            $this->container->set($serviceName, new $service);
+            return true;
         }
 
-        $service = $function;
-        $this->container->set($serviceName, new $service);
+        return false;
     }
 }
