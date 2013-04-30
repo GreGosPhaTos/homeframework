@@ -32,6 +32,13 @@ class HTTPRequest
     /**
      * @return mixed
      */
+    public function getMethod() {
+        return $_SERVER['REQUEST_METHOD'];
+    }
+
+    /**
+     * @return mixed
+     */
     public function getRequestURI() {
 		return $_SERVER['REQUEST_URI'];
 	}
@@ -40,7 +47,7 @@ class HTTPRequest
      * @return array|void
      */
     public function getPostData() {
-        if (strlen($httpStream = file_get_contents('php://input'))>0){
+        if (strlen($httpStream = file_get_contents('php://input')) > 0){
             $dataSerializer = new DataSerializer();
             return $dataSerializer->unserialize($httpStream);
         }
