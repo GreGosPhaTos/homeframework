@@ -53,6 +53,7 @@ class Router
             throw new \HttpRequestException("Pas de route disponible.");
         }
 
+        /* @TODO à fixer avec la classe Request */
         array_merge($_GET, $routeEntity->vars());
         return $this->route;
     }

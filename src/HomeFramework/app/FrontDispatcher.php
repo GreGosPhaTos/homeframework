@@ -18,8 +18,10 @@ class FrontDispatcher {
             return new $controllerClass($route->module(), $router->action());
         } catch (\Exception $e) {
             // @todo implementer un service de log
-            $container->get('HTTPResponse')
-                ->setResponseCode(404);
+            $container
+                ->get('HTTPResponse')
+                ->setStatusCode(404)
+                ->send();
             return null;
         }
     }

@@ -9,17 +9,16 @@ class HTTPRequest
     /**
      * Get the request data
      *
+     * @param string $method HTTPMethod
      * @param $key
      * @return string|null
      */
-    public function getData($key)
+    public function getData($method = "GET", $key)
 	{
-        $method = $this->getMethod();
-
 	    switch($method) {
             case 'POST' :
             case 'PUT' :
-                $postData = $this->getPostData();
+                $postData = $this->getContent();
                 return $postData[$key];
             case 'GET' :
                 $getData = $this->getGetData();
@@ -32,13 +31,6 @@ class HTTPRequest
     /**
      * @return mixed
      */
-    public function getMethod() {
-        return $_SERVER['REQUEST_METHOD'];
-    }
-
-    /**
-     * @return mixed
-     */
     public function getRequestURI() {
 		return $_SERVER['REQUEST_URI'];
 	}
@@ -46,8 +38,8 @@ class HTTPRequest
     /**
      * @return array|void
      */
-    public function getPostData() {
-        if (strlen($httpStream = file_get_contents('php://input')) > 0){
+    public function getContent() {
+        if (strlen($httpStream = file_get_contents('php://input'))>0){
             $dataSerializer = new DataSerializer();
             return $dataSerializer->unserialize($httpStream);
         }
@@ -105,5 +97,9 @@ class HTTPRequest
 
     public function getCookies() {
         return $_COOKIE;
+    }
+
+    public function getMethod() {
+        $_SERVER['REQUEST_METHOD'];
     }
 }
