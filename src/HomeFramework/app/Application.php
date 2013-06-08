@@ -1,17 +1,14 @@
 <?php
 namespace HomeFramework\app;
 
+use HomeFramework\container\ContainerAware;
+
 /**
  * Class Application
  * @package HomeFramework\app
  *
  */
-abstract class Application {
-
-    /**
-     * @var \HomeFramework\container\Container
-     */
-    protected $container;
+abstract class Application extends ContainerAware {
 
     /**
      * @var string
@@ -22,7 +19,7 @@ abstract class Application {
      *
      */
     public function __construct() {
-	    $this->container = new \HomeFramework\container\Container();
+	    $this->container = $this->setContainer(new \HomeFramework\container\Container());
 	    $this->name = "";
 	}
 
@@ -36,7 +33,7 @@ abstract class Application {
     protected function beforeRun() {
         // Bootstrap par défaut
         //$this->container->set("Application", $this);
-        $this->container->attach(new Bootstrap($this->container));
+        $this->container->attach(new Bootstrap());
     }
 
     protected function shutDown() {

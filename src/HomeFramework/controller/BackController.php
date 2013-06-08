@@ -2,7 +2,10 @@
 namespace HomeFramework\controller;
 
 
-abstract class BackController {
+use HomeFramework\container\ContainerAware,
+    HomeFramework\container\IContainer;
+
+abstract class BackController extends ContainerAware implements \SplSubject {
     /**
      * @var string
      */
@@ -21,20 +24,42 @@ abstract class BackController {
     /**
      * @var
      */
-    protected $container;
-
+    private $layout;
 
     /**
-     * @param \HomeFramework\container $container
+     * @var array
+     */
+    private $vars = array();
+
+    /**
+     * @param \HomeFramework\container\IContainer $container
      * @param $module
      * @param $action
      */
-    public function __construct(\HomeFramework\container $container, $module, $action) {
-        $this->setContainer($container);
-        $this->page = $container->get('Page');
+    public function __construct(IContainer $container, $module, $action) {
+        $this->setContainers($container);
         $this->setModule($module);
         $this->setAction($action);
-        $this->setView($action);
+        // @TODO Sortir du Constructeur
+        $config = $this->container->get('DefaultConfiguration');
+        $configReader = $this->container($config->get('reader'));
+
+        $templateConfig = $config->get('template');
+        $replacement = array(
+            'appName' => $this->container->get('Application')->getName(),
+            'module' => $this->module,
+            'view' => $this->view,
+        );
+        $templateConfig['view'] = $configReader->read($replacement, $templateConfig['file']);
+        $this->setView($templateConfig['view']);
+
+        $replacement = array(
+            'appName' => $this->container->get('Application')->getName(),
+        );
+        $templateConfig['layout'] = $configReader->read($replacement, $templateConfig['layout']);
+        $this->setView($templateConfig['view']);
+
+        $config->set('template', $templateConfig);
     }
 
     /**
@@ -63,13 +88,6 @@ abstract class BackController {
     }
 
     /**
-     * @param $container
-     */
-    public function setContainer($container) {
-        $this->container = $container;
-    }
-
-    /**
      * @param $action
      * @throws \InvalidArgumentException
      */
@@ -83,14 +101,68 @@ abstract class BackController {
 
     /**
      * @param $view
+     * @throws \RuntimeException
      * @throws \InvalidArgumentException
      */
     public function setView($view) {
         if (!is_string($view) || empty($view)) {
-            throw new \InvalidArgumentException('La vue doit être une chaine de caractères valide');
+            throw new \InvalidArgumentException('La vue spécifiée est invalide');
+        }
+
+        if (!file_exists($view)) {
+            throw new \RuntimeException('La vue spécifiée n\'existe pas');
         }
 
         $this->view = $view;
-        $this->page->setContentFile(dirname(__FILE__).'/../Applications/'.$this->app->name().'/Modules/'.$this->module.'/Views/'.$this->view.'.php');
+    }
+
+    /**
+     * @param $var
+     * @param $value
+     * @throws \InvalidArgumentException
+     */
+    public function addVar($var, $value) {
+        if (!is_string($var) || is_numeric($var) || empty($var)) {
+            throw new \InvalidArgumentException('Le nom de la variable doit être une chaine de caractère non nulle');
+        }
+
+        $this->vars[$var] = $value;
+    }
+
+    /**
+     * @return string
+     * @throws \RuntimeException
+     *
+     * @TODO gerer la session
+     */
+    public function renderView() {
+        //$user = $this->app->user();
+        extract($this->vars);
+        ob_start();
+        require $this->contentFile;
+        $content = ob_get_contents();
+
+        require $this->layoutFile;
+        return ob_get_clean();
+    }
+
+    /**
+     * @param $layoutFile
+     * @throws \RuntimeException
+     * @throws \InvalidArgumentException
+     * @internal param $layoutFile
+     *
+     * @TODO FileSystem ?
+     */
+    public function setLayout($layoutFile) {
+        if (!is_string($layoutFile) || empty($layoutFile)) {
+            throw new \InvalidArgumentException('La vue spécifiée est invalide');
+        }
+
+        if (!file_exists($layoutFile)) {
+            throw new \RuntimeException('La vue spécifiée n\'existe pas');
+        }
+
+        $this->layout = $layoutFile;
     }
 }

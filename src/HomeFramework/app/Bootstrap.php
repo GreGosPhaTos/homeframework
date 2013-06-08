@@ -8,14 +8,11 @@ use HomeFramework\container;
  *
  * @author Adrien
  */
-class Bootstrap implements SplObserver {
+class Bootstrap extends container\ContainerAware implements \SplObserver {
 
-    protected $container;
-
-    public function __construct(\IContainer $container) {
-        $this->container = $container;
-    }
-
+    /**
+     * @return \HomeFramework\http\HTTPRequest
+     */
     protected function InitializeHttpRequest() {
         return new \HomeFramework\http\HTTPRequest();
     }
@@ -38,7 +35,12 @@ class Bootstrap implements SplObserver {
     protected function InitializeRouterFormatter() {
         $config = $this->container->get('DefaultConfiguration');
         $routeConfig = $config->get('route');
-        $routerFormatterClass = "\\HomeFramework\\formatter\\".$routeConfig['route']['']."Formatter";
+        $replacement = array('appName' => $this->container->get('Application')->getName());
+        $configReader = $this->container($config->get('reader'));
+        $routeConfig['file'] = $configReader->read($replacement, $routeConfig['file']);
+        $config->set('route', $routeConfig);
+
+        $routerFormatterClass = "\\HomeFramework\\formatter\\".$routeConfig['route']['parser']['format']."Formatter";
         $routerFormatter = new $routerFormatterClass($routeConfig['file']);
 
         return $routerFormatter;
@@ -52,31 +54,47 @@ class Bootstrap implements SplObserver {
         $configureFormatter = new \HomeFramework\formatter\XMLFormatter(__DIR__."../app.xml");
         $config = new \HomeFramework\config\Configurator($configureFormatter);
         $config->configure();
-        // @TODO externaliser dans un config
-        $defaultConfDir = __DIR__.'/../apps/'.$this->container->get("Application")->name().'/config';
-        $defaultRouteFile = $defaultConfDir."/routes.xml";
-        $config->set("route", array("file" => $defaultRouteFile));
-
         return $config;
     }
 
     /**
-     *
+     * @return \HomeFramework\reader\ConfigPathReader
      */
-    protected function InitializePage() {
-        $routerBuilder = new \HomeFramework\page\Page();
-        $routerBuilder->setRequest($this->container->get("HttpRequest"));
+    protected function InitializePathReader() {
+        return new \HomeFramework\reader\ConfigPathReader();
     }
 
     /**
-     * @param $serviceName
+     * @return \HomeFramework\page\Page
+     */
+    protected function InitializePage() {
+        $config = $this->container->get('DefaultConfiguration');
+        $routeConfig = $config->get('page');
+        $replacement = array('appName' => $this->container->get('Application')->getName());
+        $configReader = $this->container($config->get('reader'));
+        $routeConfig['file'] = $configReader->read($replacement, $routeConfig['file']);
+        $config->set('route', $routeConfig);
+
+
+        $pageBuilder = new \HomeFramework\page\PageBuilder();
+        $pageBuilder
+            ->setContainer($this->container);
+
+        return $pageBuilder->build();
+    }
+
+    /**
+     * @param \SplSubject $container
+     * @internal param $serviceName
      *
      * @return bool
      */
-    public function update($serviceName) {
-        $service = $this->Initialize.ucfirst($serviceName);
+    public function update(\SplSubject $container) {
+        // @TODO assignation obligatoire à chaque fois ? utilisation du helper Object
+        $this->setContainer($container);
+        $service = $this->Initialize.ucfirst($this->container->getServiceName());
         if (is_callable($service)) {
-            $this->container->set($serviceName, new $service);
+            $this->container->set($this->container->getServiceName(), new $service);
             return true;
         }
 

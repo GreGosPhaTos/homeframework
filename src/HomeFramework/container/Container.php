@@ -1,13 +1,12 @@
 <?php
 namespace HomeFramework\container;
 
-
 /**
  * Class Container
  *
  *
  */
-class Container implements \HomeFramework\common\IAccess, SplSubject {
+class Container implements IContainer, \SplSubject {
 
     /**
      * @var array
@@ -19,9 +18,15 @@ class Container implements \HomeFramework\common\IAccess, SplSubject {
      */
     private $observers = array();
 
+    /**
+     * @var
+     */
+    private $service;
+
     public function get($service) {
         if(!isset($this->container[$service])) {
-            $this->notify($service);
+            $this->service = $service;
+            $this->notify();
         }
         return $this->container[$service];
     }
@@ -29,31 +34,38 @@ class Container implements \HomeFramework\common\IAccess, SplSubject {
     /**
      * Set a new service to the container
      *
-     * @param $service
      * @param $object
      *
+     * @internal param $service
      * @return void
      */
-    public function set($service, $object) {
-        if ($this->container[$service] !== $object) {
-            unset($this->container[$service]);
-            $this->container[$service] = $object;
+    public function set($object) {
+        if ($this->container[$this->service] !== $object) {
+            unset($this->container[$this->service]);
+            $this->container[$this->service] = $object;
         }
     }
 
     /**
-     * @param string $service
+     * @return mixed
+     */
+    public function getServiceName() {
+        return $this->service;
+    }
+
+    /**
+     * Notify the observers
      *
      * @return bool
      * @throws \RuntimeException
      */
-    public function notify($service = "") {
+    public function notify() {
         foreach ($this->observers as $observer) {
-            if ($observer->update($service)) {
+            if ($observer->update($this)) {
                 return true;
             }
         }
-        throw new \RuntimeException("Aucun service " . $service . " n' a été trouvé");
+        throw new \RuntimeException("Aucun service " . $this->service . " n' a été trouvé");
     }
 
     /**
