@@ -1,7 +1,7 @@
 <?php
 namespace HomeFramework\common;
 
-interface Ibuilder {
+interface IBuilder {
 
     /**
      * Sets the application container

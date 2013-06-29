@@ -58,6 +58,22 @@ class Bootstrap extends container\ContainerAware implements \SplObserver {
     }
 
     /**
+     * @return \HomeFramework\manager\EntityManager
+     * @TODO fixer
+     */
+    protected function InitializeEntityManager() {
+        $config = $this->container->get('DefaultConfiguration');
+        $emConfig = $config->get('entityManager');
+        $api = $emConfig['api'];
+        $className = $emConfig['api']."Factory";
+        $method = "get".$emConfig['sgbd']."Connexion";
+        $dao = $className::$method;
+        $namespace = $emConfig['namespace'];
+
+        return new \HomeFramework\manager\EntityManager($api, $dao, $namespace);
+    }
+
+    /**
      * @return \HomeFramework\reader\ConfigPathReader
      */
     protected function InitializePathReader() {
@@ -65,6 +81,7 @@ class Bootstrap extends container\ContainerAware implements \SplObserver {
     }
 
     /**
+     * @Todo supprimer ?
      * @return \HomeFramework\page\Page
      */
     protected function InitializePage() {
