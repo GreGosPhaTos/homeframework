@@ -6,11 +6,11 @@ interface IBuilder {
     /**
      * Sets the application container
      *
-     * @param \HomeFramework\container\Container  $container
+     * @param \HomeFramework\common\IAccess  $container
      *
      * @return mixed
      */
-    public function setContainer(\HomeFramework\container\IContainer $container);
+    public function setContainer(\HomeFramework\common\IAccess $container);
 
     /**
      * Build the object

@@ -5,11 +5,15 @@ use HomeFramework\common\IReader;
 
 class PathReader implements IReader {
     /**
-     * @param array $remplacement
+     * @param array $remplacements
      * @param $subject
      * @return mixed
      */
-    public function read(array $remplacement, $subject) {
-        return preg_replace("/(\{\w\})/\e", "\$remplacement[$1]", $subject);
+    public function read(array $remplacements, $subject) {
+        foreach ($remplacements as $pattern => $remplacement) {
+            $subject = preg_replace("/(\{".$pattern."\})/", $remplacement, $subject);
+        }
+
+        return $subject;
     }
 }

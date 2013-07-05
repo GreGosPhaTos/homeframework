@@ -1,7 +1,12 @@
 <?php
 namespace HomeFramework\app;
 
-use HomeFramework\container;
+use HomeFramework\container,
+    HomeFramework\http\HTTPResponse,
+    HomeFramework\http\XMLResponse,
+    HomeFramework\http\JSONResponse,
+    HomeFramework\http\HTTPRequest;
+
 
 /**
  *
@@ -13,8 +18,29 @@ class Bootstrap extends container\ContainerAware implements \SplObserver {
     /**
      * @return \HomeFramework\http\HTTPRequest
      */
-    protected function InitializeHttpRequest() {
-        return new \HomeFramework\http\HTTPRequest();
+    protected function InitializeHTTPRequest() {
+        return new HTTPRequest();
+    }
+
+    /**
+     * @return HTTPResponse
+     */
+    protected function InitializeHTTPResponse() {
+        return new HTTPResponse();
+    }
+
+    /**
+     * @return JSONResponse
+     */
+    protected function InitializeJSONResponse() {
+        return new JSONResponse();
+    }
+
+    /**
+     * @return XMLResponse
+     */
+    protected function InitializeXMLResponse() {
+        return new XMLResponse();
     }
 
     /**
@@ -35,13 +61,13 @@ class Bootstrap extends container\ContainerAware implements \SplObserver {
     protected function InitializeRouterFormatter() {
         $config = $this->container->get('DefaultConfiguration');
         $routeConfig = $config->get('route');
-        $replacement = array('appName' => $this->container->get('Application')->getName());
-        $configReader = $this->container($config->get('reader'));
+        $replacement = array('appName' => $this->container->get('ApplicationName'));
+        $configReader = $this->container->get($config->get('reader'));
         $routeConfig['file'] = $configReader->read($replacement, $routeConfig['file']);
         $config->set('route', $routeConfig);
 
-        $routerFormatterClass = "\\HomeFramework\\formatter\\".$routeConfig['route']['parser']['format']."Formatter";
-        $routerFormatter = new $routerFormatterClass($routeConfig['file']);
+        $routerFormatterClass = "\\HomeFramework\\formatter\\".$routeConfig['parser']['format']."Formatter";
+        $routerFormatter = new $routerFormatterClass(file_get_contents($routeConfig['file']));
 
         return $routerFormatter;
     }
@@ -51,10 +77,12 @@ class Bootstrap extends container\ContainerAware implements \SplObserver {
      */
     protected function InitializeDefaultConfiguration() {
         // Default values
-        $configureFormatter = new \HomeFramework\formatter\XMLFormatter(__DIR__."../app.xml");
-        $config = new \HomeFramework\config\Configurator($configureFormatter);
-        $config->configure();
-        return $config;
+        $config = new \HomeFramework\config\Configurator(
+            // @todo fix me
+            new \HomeFramework\formatter\XMLFormatter(file_get_contents(__DIR__."/../../../../../apps/app.xml"))
+        );
+
+        return $config->configure();
     }
 
     /**
@@ -74,34 +102,15 @@ class Bootstrap extends container\ContainerAware implements \SplObserver {
     }
 
     /**
-     * @return \HomeFramework\reader\ConfigPathReader
+     * @return \HomeFramework\reader\ConfigPathReaderÇ
      */
     protected function InitializePathReader() {
-        return new \HomeFramework\reader\ConfigPathReader();
-    }
-
-    /**
-     * @Todo supprimer ?
-     * @return \HomeFramework\page\Page
-     */
-    protected function InitializePage() {
-        $config = $this->container->get('DefaultConfiguration');
-        $routeConfig = $config->get('page');
-        $replacement = array('appName' => $this->container->get('Application')->getName());
-        $configReader = $this->container($config->get('reader'));
-        $routeConfig['file'] = $configReader->read($replacement, $routeConfig['file']);
-        $config->set('route', $routeConfig);
-
-
-        $pageBuilder = new \HomeFramework\page\PageBuilder();
-        $pageBuilder
-            ->setContainer($this->container);
-
-        return $pageBuilder->build();
+        return new \HomeFramework\reader\PathReader();
     }
 
     /**
      * @param \SplSubject $container
+     * @throws \InvalidArgumentException
      * @internal param $serviceName
      *
      * @return bool
@@ -109,9 +118,17 @@ class Bootstrap extends container\ContainerAware implements \SplObserver {
     public function update(\SplSubject $container) {
         // @TODO assignation obligatoire à chaque fois ? utilisation du helper Object
         $this->setContainer($container);
-        $service = $this->Initialize.ucfirst($this->container->getServiceName());
-        if (is_callable($service)) {
-            $this->container->set($this->container->getServiceName(), new $service);
+        $serviceName = $this->container->getServiceName();
+        $method = "Initialize".ucfirst($serviceName);
+
+        if (is_callable(array($this, $method), true)) {
+            $service = $this->$method();
+        } else {
+            throw new \InvalidArgumentException($method . " : This method is not callable. This service doesn't exist.");
+        }
+
+        if (is_object($service)) {
+            $this->container->set($serviceName, $service);
             return true;
         }
 

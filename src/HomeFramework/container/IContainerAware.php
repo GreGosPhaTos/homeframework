@@ -1,21 +1,14 @@
 <?php
-/**
- * Created by JetBrains PhpStorm.
- * User: Adrien
- * Date: 19/05/13
- * Time: 13:12
- * To change this template use File | Settings | File Templates.
- */
-
 namespace HomeFramework\container;
 
+use HomeFramework\common\IAccess;
 
 interface IContainerAware {
 
     /**
-     * @param ContainerInterface $container
+     * @param \HomeFramework\common\IAccess $container
      * @return mixed
      */
-    public function setContainer(ContainerInterface $container = null);
+    public function setContainer(IAccess $container = null);
 
 }

@@ -18,9 +18,8 @@ class RouterBuilder implements \HomeFramework\common\IBuilder {
      */
     public function build() {
         $router = new \HomeFramework\routing\Router();
-        $router
-            ->setFormatter($this->container->get('RouterFormatter'))
-            ->setRequest($this->container->get('HTTPRequest'));
+        $router->setFormatter($this->container->get('RouterFormatter'));
+        $router->setHTTPRequest($this->container->get('HTTPRequest'));
 
         return $router;
     }
@@ -32,7 +31,7 @@ class RouterBuilder implements \HomeFramework\common\IBuilder {
      *
      * @return mixed
      */
-    public function setContainer(\HomeFramework\container\IContainer $container) {
+    public function setContainer(\HomeFramework\common\IAccess $container) {
         $this->container = $container;
     }
 }

@@ -3,9 +3,15 @@ namespace HomeFramework\controller;
 
 
 use HomeFramework\container\ContainerAware,
-    HomeFramework\container\IContainer;
+    HomeFramework\common\IAccess;
 
-abstract class BackController extends ContainerAware implements \SplSubject {
+/**
+ * Class BackController
+ * @package HomeFramework\controller
+ *
+ * @todo implements SplSubject ???
+ */
+abstract class BackController extends ContainerAware {
     /**
      * @var string
      */
@@ -22,42 +28,45 @@ abstract class BackController extends ContainerAware implements \SplSubject {
     protected $view = '';
 
     /**
+     * @var array
+     */
+    protected $vars = array();
+
+    /**
      * @var
      */
     private $layout;
 
-    /**
-     * @var array
-     */
-    private $vars = array();
 
     /**
-     * @param \HomeFramework\container\IContainer $container
+     * @param \HomeFramework\common\IAccess $container
      * @param $module
      * @param $action
+     * @param $vars
      */
-    public function __construct(IContainer $container, $module, $action) {
-        $this->setContainers($container);
+    public function __construct(IAccess $container, $module, $action, $vars) {
+        $this->setContainer($container);
         $this->setModule($module);
         $this->setAction($action);
+        $this->setVars($vars);
         // @TODO Sortir du Constructeur
         $config = $this->container->get('DefaultConfiguration');
-        $configReader = $this->container($config->get('reader'));
+        $configReader = $this->container->get($config->get('reader'));
 
         $templateConfig = $config->get('template');
         $replacement = array(
-            'appName' => $this->container->get('Application')->getName(),
+            'appName' => $this->container->get('ApplicationName'),
             'module' => $this->module,
-            'view' => $this->view,
+            'view' => $this->action,
         );
-        $templateConfig['view'] = $configReader->read($replacement, $templateConfig['file']);
+        $templateConfig['view'] = $configReader->read($replacement, $templateConfig['view']);
         $this->setView($templateConfig['view']);
 
         $replacement = array(
-            'appName' => $this->container->get('Application')->getName(),
+            'appName' => $this->container->get('ApplicationName'),
         );
         $templateConfig['layout'] = $configReader->read($replacement, $templateConfig['layout']);
-        $this->setView($templateConfig['view']);
+        $this->setLayout($templateConfig['layout']);
 
         $config->set('template', $templateConfig);
     }
@@ -66,7 +75,7 @@ abstract class BackController extends ContainerAware implements \SplSubject {
      * @throws \RuntimeException
      */
     public function execute() {
-        $method = 'execute'.ucfirst($this->action);
+        $method = 'on'.ucfirst($this->action);
 
         if (!is_callable(array($this, $method))) {
             throw new \RuntimeException('L\'action "'.$this->action.'" n\'est pas définie sur ce module');
@@ -117,6 +126,13 @@ abstract class BackController extends ContainerAware implements \SplSubject {
     }
 
     /**
+     * @param array $vars
+     */
+    public function setVars(array $vars) {
+        $this->vars = $vars;
+    }
+
+    /**
      * @param $var
      * @param $value
      * @throws \InvalidArgumentException
@@ -139,11 +155,14 @@ abstract class BackController extends ContainerAware implements \SplSubject {
         //$user = $this->app->user();
         extract($this->vars);
         ob_start();
-        require $this->contentFile;
-        $content = ob_get_contents();
 
-        require $this->layoutFile;
-        return ob_get_clean();
+        require $this->view;
+        $content = ob_get_contents();
+        ob_clean();
+
+        require $this->layout;
+
+        return ob_end_flush();
     }
 
     /**
