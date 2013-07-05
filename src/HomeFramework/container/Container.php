@@ -1,12 +1,14 @@
 <?php
 namespace HomeFramework\container;
 
+use HomeFramework\common\IAccess;
+
 /**
  * Class Container
  *
  *
  */
-class Container implements IContainer, \SplSubject {
+class Container implements IAccess, \SplSubject {
 
     /**
      * @var array
@@ -34,15 +36,17 @@ class Container implements IContainer, \SplSubject {
     /**
      * Set a new service to the container
      *
+     * @param $service
      * @param $object
      *
      * @internal param $service
      * @return void
      */
-    public function set($object) {
-        if ($this->container[$this->service] !== $object) {
-            unset($this->container[$this->service]);
-            $this->container[$this->service] = $object;
+    public function set($service, $object) {
+        if (!isset($this->container[$service])) {
+            $this->container[$service] = $object;
+        } else if ($this->container[$service] !== $object) {
+            $this->container[$service] = $object;
         }
     }
 

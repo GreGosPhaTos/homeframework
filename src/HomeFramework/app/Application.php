@@ -19,7 +19,7 @@ abstract class Application extends ContainerAware {
      *
      */
     public function __construct() {
-	    $this->container = $this->setContainer(new \HomeFramework\container\Container());
+        $this->setContainer(new \HomeFramework\container\Container());
 	    $this->name = "";
 	}
 
@@ -28,17 +28,19 @@ abstract class Application extends ContainerAware {
     }
 
     /**
-     *
+     * Before the app run
+     * @return void
      */
     protected function beforeRun() {
-        // Bootstrap par défaut
-        //$this->container->set("Application", $this);
+        // default Bootstrap
         $this->container->attach(new Bootstrap());
+        $this->container->set("ApplicationName", $this->getName());
     }
 
-    protected function shutDown() {
-        exit;
-    }
+    /**
+     * @todo finir
+     */
+    protected function shutDown() {}
 
     /**
      * Run the application
@@ -47,6 +49,7 @@ abstract class Application extends ContainerAware {
     final public function run() {
 	    $this->beforeRun();
         FrontDispatcher::dispatch($this);
+        $this->shutDown();
 	}
 
     /**
@@ -54,8 +57,15 @@ abstract class Application extends ContainerAware {
      *
      * @return string
      */
-    public function name() {
+    public function getName() {
         return $this->name;
+    }
+
+    /**
+     * @param $name
+     */
+    public function setName($name) {
+        $this->name = (string)$name;
     }
 
     /**
@@ -65,5 +75,4 @@ abstract class Application extends ContainerAware {
     public function getContainer() {
 	    return $this->container;
 	}
-
 }

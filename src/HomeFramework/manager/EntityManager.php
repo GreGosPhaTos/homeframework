@@ -46,5 +46,4 @@ class EntityManager {
 
         return $this->managers[$module];
     }
-
 }

@@ -63,21 +63,21 @@ class Route
     /**
      * @return mixed
      */
-    public function action() {
+    public function getAction() {
         return $this->action;
     }
 
     /**
      * @return mixed
      */
-    public function module() {
+    public function getModule() {
         return $this->module;
     }
 
     /**
      * @return array
      */
-    public function vars() {
+    public function getVars() {
         return $this->vars;
     }
 }

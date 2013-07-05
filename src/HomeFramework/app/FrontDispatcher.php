@@ -1,6 +1,8 @@
 <?php
 namespace HomeFramework\app;
 
+use \HomeFramework\controller\BackController;
+
 class FrontDispatcher {
 
     /**
@@ -8,20 +10,33 @@ class FrontDispatcher {
      *
      * @param Application $app
      * @return mixed
+     *
      */
     static public function dispatch(\HomeFramework\app\Application $app) {
         $container = $app->getContainer();
-        $router = $container->get('Router');
+
         try {
-            $route = $router->getRoute();
-            $controllerClass = 'apps\\'.$app->name().'\\Modules\\'.$route->module().'\\'.$route->module().'Controller';
-            return new $controllerClass($route->module(), $router->action());
+            $router = $container->get('Router');
+            $route  = $router->getRoute();
+            $module = $route->getModule();
+            $action = $route->getAction();
+            $vars   = $route->getVars();
+
+            // @todo fix it modules folder ??
+            $controllerClass = '\\'.$app->getName().'\\modules\\'.$module.'\\controller\\'.ucfirst($module).'Controller';
+            $controller = new $controllerClass($container, $module, $action, $vars);
+            if (!$controller instanceof BackController) {
+                throw new \Exception("Controller must be an BackController Object.");
+            }
+
+            $controller->execute();
         } catch (\Exception $e) {
             // @todo implementer un service de log
-            $container
-                ->get('HTTPResponse')
-                ->setStatusCode(404)
-                ->send();
+            $HTTPResponse = $container->get('HTTPResponse');
+            $HTTPResponse->setBody("Not Found");
+            $HTTPResponse->setBody($e->getMessage());
+            $HTTPResponse->setStatusCode(404);
+            $HTTPResponse->send();
             return null;
         }
     }

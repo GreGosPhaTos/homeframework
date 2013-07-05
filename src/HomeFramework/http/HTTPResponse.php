@@ -89,7 +89,7 @@ class HTTPResponse
      *
      * @return \HomeFramework\http\HTTPResponse
      */
-    public function __construct($body, $statusCode = 200, array $headers = array())
+    public function __construct($body = "", $statusCode = 200, array $headers = array())
     {
         $this->setBody($body);
         $this->setStatusCode($statusCode);

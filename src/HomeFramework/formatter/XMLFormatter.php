@@ -19,7 +19,7 @@ class XMLFormatter implements IFormatter {
      * @return array
      */
     public function toArray() {
-        $xml = new DOMDocument();
+        $xml = new \DOMDocument();
         if (!$xml->loadXML($this->data)) {
             throw new \RuntimeException("Le format XML est invalide");
         }

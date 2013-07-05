@@ -19,8 +19,9 @@ class Router
     private $formatter;
 
     /**
+     *
      * @throws \RuntimeException
-     * @throws \HttpRequestException
+     * @throws \Exception
      * @return mixed
      */
     public function getRoute() {
@@ -32,7 +33,7 @@ class Router
         }
 
         foreach ($routes['route'] as $route) {
-            if (preg_match('/^\/'.$route['@attributes']['url'].'$/', $this->httpRequest->getRequestURI(), $matches)) {
+            if (preg_match('#^'.$route['@attributes']['url'].'$#', $this->httpRequest->getRequestURI(), $matches)) {
                 $routeEntity = new Route();
                 if (isset($route['@attributes']['vars'])) {
                     $i = 1;
@@ -40,6 +41,7 @@ class Router
                         $vars[$varName] = $matches[$i];
                         $i++;
                     }
+                    $routeEntity->setVars($vars);
                 }
 
                 $routeEntity->setUrl($route['@attributes']['url']);
@@ -50,12 +52,12 @@ class Router
         }
 
         if (is_null($routeEntity)) {
-            throw new \HttpRequestException("Pas de route disponible.");
+            throw new \Exception("Pas de route disponible.");
         }
 
         /* @TODO à fixer avec la classe Request */
-        array_merge($_GET, $routeEntity->vars());
-        return $this->route;
+        array_merge($_GET, $routeEntity->getVars());
+        return $routeEntity;
     }
 
     /**
