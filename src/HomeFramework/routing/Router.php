@@ -33,20 +33,20 @@ class Router
         }
 
         foreach ($routes['route'] as $route) {
-            if (preg_match('#^'.$route['@attributes']['url'].'$#', $this->httpRequest->getRequestURI(), $matches)) {
+            if (preg_match('#^'.$route['url'].'$#', $this->httpRequest->getRequestURI(), $matches)) {
                 $routeEntity = new Route();
-                if (isset($route['@attributes']['vars'])) {
+                if (isset($route['vars'])) {
                     $i = 1;
-                    foreach (explode(',', $route['@attributes']['vars']) as $varName) {
+                    foreach (explode(',', $route['vars']) as $varName) {
                         $vars[$varName] = $matches[$i];
                         $i++;
                     }
                     $routeEntity->setVars($vars);
                 }
 
-                $routeEntity->setUrl($route['@attributes']['url']);
-                $routeEntity->setModule($route['@attributes']['module']);
-                $routeEntity->setAction($route['@attributes']['action']);
+                $routeEntity->setUrl($route['url']);
+                $routeEntity->setModule($route['module']);
+                $routeEntity->setAction($route['action']);
                 break 1;
             }
         }
