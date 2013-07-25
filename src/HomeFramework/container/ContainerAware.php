@@ -9,8 +9,6 @@
 
 namespace HomeFramework\container;
 
-
-use HomeFramework\common\IAccess;
 /**
  * A simple implementation of ContainerAwareInterface.
  *
@@ -21,7 +19,7 @@ use HomeFramework\common\IAccess;
 class ContainerAware implements IContainerAware
 {
     /**
-     * @var ContainerInterface
+     * @var IContainer
      *
      * @api
      */
@@ -30,12 +28,12 @@ class ContainerAware implements IContainerAware
     /**
      * Sets the Container associated with this Controller.
      *
-     * @param IAccess $container A ContainerInterface instance
+     * @param IContainer $container A IContainer instance
      *
      * @return mixed|void
      * @api
      */
-    public function setContainer(IAccess $container = null)
+    public function setContainer(IContainer $container = null)
     {
         $this->container = $container;
     }

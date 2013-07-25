@@ -52,7 +52,7 @@ class Router
         }
 
         if (is_null($routeEntity)) {
-            throw new \Exception("Pas de route disponible.");
+            throw new \Exception("Route not available : " . $this->httpRequest->getRequestURI());
         }
 
         /* @TODO à fixer avec la classe Request */

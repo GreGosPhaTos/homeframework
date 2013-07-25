@@ -1,99 +1,97 @@
 <?php
 namespace HomeFramework\container;
 
-use HomeFramework\common\IAccess;
-
 /**
- * Class Container
- *
- *
+ * Class Container The dynamic objects handler
+ * @package HomeFramework\container
  */
-class Container implements IAccess, \SplSubject {
+class Container implements IContainer {
 
     /**
      * @var array
      */
-    private $container = array();
+    private $subscribers = array();
 
     /**
-     * @var array
-     */
-    private $observers = array();
-
-    /**
-     * @var
+     * @var Service
      */
     private $service;
 
-    public function get($service) {
-        if(!isset($this->container[$service])) {
-            $this->service = $service;
-            $this->notify();
+    /**
+     * Dynamic getter
+     *
+     * @param string $serviceName
+     * @return mixed
+     * @throws \RuntimeException
+     */
+    public function get($serviceName) {
+        $this->setService(new Service());
+        $this->service->setName($serviceName);
+        if ($this->fetchService()) {
+            return $this->service->getInstance();
         }
-        return $this->container[$service];
+
+        throw new \RuntimeException ("Initialization of service " . $serviceName . " failed");
     }
 
     /**
      * Set a new service to the container
      *
-     * @param $service
-     * @param $object
-     *
-     * @internal param $service
+     * @param \HomeFramework\container\Service $service
      * @return void
      */
-    public function set($service, $object) {
-        if (!isset($this->container[$service])) {
-            $this->container[$service] = $object;
-        } else if ($this->container[$service] !== $object) {
-            $this->container[$service] = $object;
-        }
+    public function setService(Service $service) {
+        $this->service = $service;
     }
 
     /**
-     * @return mixed
+     * Notify the subscribers
+     *
+     * @throws \RuntimeException
+     * @return bool
      */
-    public function getServiceName() {
+    public function fetchService() {
+        foreach ($this->subscribers as $subscriber) {
+            if ($subscriber->pushService($this)) {
+                return true;
+            }
+        }
+
+        throw new \RuntimeException("No service for " . $this->service->getName());
+    }
+
+    /**
+     * Returns the service
+     *
+     * @return Service
+     */
+    public function getService() {
         return $this->service;
     }
 
     /**
-     * Notify the observers
+     * Attach a new subscriber
      *
-     * @return bool
-     * @throws \RuntimeException
+     * @param IContainerSubscriber $subscriber
+     * @return mixed|void
      */
-    public function notify() {
-        foreach ($this->observers as $observer) {
-            if ($observer->update($this)) {
-                return true;
-            }
+    public function subscribe(IContainerSubscriber $subscriber) {
+        if (isset($this->subscribers[get_class($subscriber)]) && $this->subscribers[get_class($subscriber)] === $subscriber) {
+            return;
         }
-        throw new \RuntimeException("Aucun service " . $this->service . " n' a été trouvé");
+
+        $this->subscribers[get_class($subscriber)] = $subscriber;
     }
 
     /**
-     * Attach a new observer
+     * Detach a subscriber
      *
-     * @param \HomeFramework\container\SplObserver|\SplObserver $observer
-     *
-     * @return void
+     * @param IContainerSubscriber $subscriber
+     * @return mixed|void
      */
-    public function attach(\SplObserver $observer) {
-        if (!isset($this->observers[get_class($observer)]) || (isset($this->observers[get_class($observer)]) && $this->observers[get_class($observer)] !== $observer)) {
-            unset($this->container[get_class($observer)]);
-            $this->observers[get_class($observer)] = $observer;
+    public function unSubscribe(IContainerSubscriber $subscriber) {
+        if (isset($this->subscribers[get_class($subscriber)])) {
+            unset($this->subscribers[get_class($subscriber)]);
         }
-    }
-
-    /**
-     * Detach an observer
-     *
-     * @param \HomeFramework\container\SplObserver|\SplObserver $observer
-     *
-     * @return void
-     */
-    public function detach(\SplObserver $observer) {
-        unset($this->observers[$observer]);
     }
 }

@@ -14,11 +14,6 @@ class EntityManager {
     protected $dao;
 
     /**
-     * @var
-     */
-    private $namespace;
-
-    /**
      * @var array
      */
     protected $managers = array();
@@ -26,21 +21,23 @@ class EntityManager {
     /**
      * @param $api
      * @param $dao
-     * @param $namespace
      */
-    public function __construct($api, $dao, $namespace) {
+    public function __construct($api, $dao) {
         $this->api = $api;
         $this->dao = $dao;
-        $this->namespace = $namespace;
     }
 
     /**
      * @param $module
+     * @throws \Exception
      * @return mixed
      */
     public function getManagerOf($module) {
         if (!isset($this->managers[$module])) {
-            $manager = $this->namespace.$module.'Manager_'.$this->api;
+            $manager = "\\".$module."\\models\\"."Manager_".$this->api;
+            if (!class_exists($manager)) {
+                throw new \Exception("Entity manager the class " . $manager ."  not found");
+            }
             $this->managers[$module] = new $manager($this->dao);
         }
 

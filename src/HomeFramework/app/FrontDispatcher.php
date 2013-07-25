@@ -1,29 +1,31 @@
 <?php
 namespace HomeFramework\app;
 
-use \HomeFramework\controller\BackController;
+use \HomeFramework\controller\BackController,
+    \HomeFramework\container\IContainer;
 
 class FrontDispatcher {
 
     /**
      * Dispath the route and returns the controller
      *
-     * @param Application $app
-     * @return mixed
-     *
+     * @param \HomeFramework\container\IContainer $container
+     * @return void
      */
-    static public function dispatch(\HomeFramework\app\Application $app) {
-        $container = $app->getContainer();
-
+    static public function dispatch(IContainer $container) {
         try {
-            $router = $container->get('Router');
-            $route  = $router->getRoute();
-            $module = $route->getModule();
-            $action = $route->getAction();
-            $vars   = $route->getVars();
+            $appName = $container
+                ->get('defaultConfiguration')
+                ->get('applicationName');
+
+            $router  = $container->get('Router');
+            $route   = $router->getRoute();
+            $module  = $route->getModule();
+            $action  = $route->getAction();
+            $vars    = $route->getVars();
 
             // @todo fix it modules folder ??
-            $controllerClass = '\\'.$app->getName().'\\modules\\'.$module.'\\controller\\'.ucfirst($module).'Controller';
+            $controllerClass = '\\'.$appName.'\\modules\\'.$module.'\\controller\\'.ucfirst($module).'Controller';
             $controller = new $controllerClass($container, $module, $action, $vars);
             if (!$controller instanceof BackController) {
                 throw new \Exception("Controller must be an BackController Object.");
@@ -31,13 +33,15 @@ class FrontDispatcher {
 
             $controller->execute();
         } catch (\Exception $e) {
-            // @todo implementer un service de log
+            $container
+                ->get('logger')
+                ->warn("FrontDispatcher ".$e->getMessage());
             $HTTPResponse = $container->get('HTTPResponse');
             $HTTPResponse->setBody("Not Found");
             $HTTPResponse->setBody($e->getMessage());
             $HTTPResponse->setStatusCode(404);
             $HTTPResponse->send();
-            return null;
+            return;
         }
     }
 }

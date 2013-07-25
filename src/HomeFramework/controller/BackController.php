@@ -3,13 +3,12 @@ namespace HomeFramework\controller;
 
 
 use HomeFramework\container\ContainerAware,
-    HomeFramework\common\IAccess;
+    HomeFramework\container\IContainer;
 
 /**
  * Class BackController
  * @package HomeFramework\controller
  *
- * @todo implements SplSubject ???
  */
 abstract class BackController extends ContainerAware {
     /**
@@ -39,31 +38,55 @@ abstract class BackController extends ContainerAware {
 
 
     /**
-     * @param \HomeFramework\common\IAccess $container
+     * @param \HomeFramework\container\IContainer $container
      * @param $module
      * @param $action
      * @param $vars
      */
-    public function __construct(IAccess $container, $module, $action, $vars) {
+    public function __construct(IContainer $container, $module, $action, $vars) {
         $this->setContainer($container);
         $this->setModule($module);
         $this->setAction($action);
         $this->setVars($vars);
-        // @TODO Sortir du Constructeur
+        $this->load();
+    }
+
+    /**
+     * Load the assets
+     */
+    private function load() {
+        $this->loadView();
+        $this->loadLayout();
+    }
+
+    /**
+     * Load the view
+     */
+    private function loadView() {
         $config = $this->container->get('DefaultConfiguration');
         $configReader = $this->container->get($config->get('reader'));
-
         $templateConfig = $config->get('template');
+
         $replacement = array(
-            'appName' => $this->container->get('ApplicationName'),
+            'appName' => $config->get('applicationName'),
             'module' => $this->module,
             'view' => $this->action,
         );
         $templateConfig['view'] = $configReader->read($replacement, $templateConfig['view']);
         $this->setView($templateConfig['view']);
+    }
+
+    /**
+     * Load the Layout
+     */
+    private function loadLayout() {
+        // @Todo ?? externaliser
+        $config = $this->container->get('DefaultConfiguration');
+        $configReader = $this->container->get($config->get('reader'));
+        $templateConfig = $config->get('template');
 
         $replacement = array(
-            'appName' => $this->container->get('ApplicationName'),
+            'appName' => $config->get('applicationName'),
         );
         $templateConfig['layout'] = $configReader->read($replacement, $templateConfig['layout']);
         $this->setLayout($templateConfig['layout']);
