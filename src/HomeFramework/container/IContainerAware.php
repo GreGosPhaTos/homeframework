@@ -5,7 +5,7 @@ namespace HomeFramework\container;
  * Interface Container 
  * @package HomeFramework\container
  */
-Interface IContainerAware {
+interface IContainerAware {
 
     /**
      * Sets a container

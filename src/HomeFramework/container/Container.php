@@ -1,7 +1,10 @@
 <?php
 namespace HomeFramework\container;
 
-/**
+use HomeFramework\container\exception\ContainerException,
+    HomeFramework\container\exception\ContainerInvalidArgumentException;
+
+    /**
  * Lazy Loading Container
  * @package HomeFramework\container
  */
@@ -21,15 +24,18 @@ class Container implements IContainer {
      * Return the instance
      *
      * @param string $serviceName
+     * @param bool $forceInstance
+     * @throws \ContainerException
      * @return mixed
-     * @throws \RuntimeException
      */
     public function get($serviceName, $forceInstance = false) {
-        if (true === $forceInstance || !isset($this->cache[$serviceName])) {
+        if (!$this->hasService($serviceName)) {
+            throw new \ContainerException("Service [".$serviceName."] doesn't exists");
+        } else if (true === $forceInstance || !isset($this->cache[$serviceName])) {
             $this->cache($serviceName);
         }
-        
-        return $this->cache[$serviceName];    
+
+        return $this->cache[$serviceName];
     }
 
     /**
@@ -38,7 +44,7 @@ class Container implements IContainer {
      * @return void
      *
      */ 
-    public clearCache() {
+    public function clearCache() {
         $this->cache = array();
     }
 
@@ -56,15 +62,35 @@ class Container implements IContainer {
     /**
      * Set a new service to the container
      *
-     * @param \HomeFramework\container\Service $service
+     * @param $serviceName
+     * @param $callback
+     * @throws ContainerInvalidArgumentException
+     * @throws ContainerException
      * @return void
      */
     public function set($serviceName, $callback) {
+        if (!is_string($serviceName)) {
+            throw new ContainerInvalidArgumentException("ServiceName must be a string given : [" . gettype($serviceName) . "]");
+        }
+
         if (!is_callable($callback)) {
-            throw new \RuntimeException("[Container] callback is not a function for service : [" . $serviceName . "]");
+            throw new ContainerInvalidArgumentException("Callback is not a function in service : [" . $serviceName . "]");
         }
 
         $this->container[$serviceName] = $callback;
     }
 
+    /**
+     * Returns if the given service exists
+     *
+     * @param $serviceName
+     * @return bool
+     */
+    public function hasService($serviceName) {
+        if (!isset($this->container[$serviceName])) {
+            return true;
+        }
+
+        return false;
+    }
 }

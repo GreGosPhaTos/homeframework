@@ -1,7 +1,8 @@
 <?php
 namespace HomeFramework\app;
 
-use HomeFramework\container\IContainer,
+use HomeFramework\container\ContainerAware,
+    HomeFramework\container\IContainer,
     HomeFramework\http\HTTPResponse,
     HomeFramework\http\XMLResponse,
     HomeFramework\http\JSONResponse,
@@ -13,16 +14,26 @@ use HomeFramework\container\IContainer,
  * Class Bootstrap the default Bootstrap
  * @package HomeFramework\app
  */
-class DefaultBootstrap implements IBootstrap {
+abstract class Bootstrap extends ContainerAware {
 
-    public function init(IContainer $container) {
-    
+    protected $container;
+
+    /**
+     *
+     */
+    public function getContainer() {
+        return $this->container;
     }
+
+    /**
+     * @param IContainer $container
+     */
+    abstract public function boot(IContainer $container);
 
     /**
      * @return \HomeFramework\http\HTTPRequest
      */
-    public static function initializeHTTPRequest(IContainer $container) {
+    protected function initializeHTTPRequest() {
         $container->set('HTTPRequest', function() {
             return new HTTPRequest();
         }
@@ -154,4 +165,6 @@ class DefaultBootstrap implements IBootstrap {
     protected function initializePathReader() {
         return new \HomeFramework\reader\PathReader();
     }
+
+
 }

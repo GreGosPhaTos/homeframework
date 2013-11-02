@@ -13,11 +13,11 @@ abstract class ContainerAware implements IContainerAware {
     /**
      * Sets the Container associated with this Controller.
      *
-     * @param Container $container A Container instance
+     * @param IContainer $container A Container instance
      *
      * @return mixed|void
      */
-    public function setContainer(Container $container = null)
+    public function setContainer(IContainer $container = null)
     {
         $this->container = $container;
     }
