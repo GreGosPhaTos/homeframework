@@ -1,14 +1,16 @@
 <?php
 namespace HomeFramework\container;
 
-use HomeFramework\common\IAccess;
-
-interface IContainerAware {
+/**
+ * Interface Container 
+ * @package HomeFramework\container
+ */
+Interface IContainerAware {
 
     /**
-     * @param \HomeFramework\container\IContainer $container
-     * @return mixed
+     * Sets a container
+     *
+     * @param IContaier $container
      */
-    public function setContainer(IContainer $container = null);
-
+    public function setContainer(IContainer $container);
 }

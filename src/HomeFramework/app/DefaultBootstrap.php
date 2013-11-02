@@ -1,7 +1,7 @@
 <?php
 namespace HomeFramework\app;
 
-use HomeFramework\container\Bootstrap,
+use HomeFramework\container\IContainer,
     HomeFramework\http\HTTPResponse,
     HomeFramework\http\XMLResponse,
     HomeFramework\http\JSONResponse,
@@ -13,13 +13,19 @@ use HomeFramework\container\Bootstrap,
  * Class Bootstrap the default Bootstrap
  * @package HomeFramework\app
  */
-class DefaultBootstrap extends Bootstrap {
+class DefaultBootstrap implements IBootstrap {
+
+    public function init(IContainer $container) {
+    
+    }
 
     /**
      * @return \HomeFramework\http\HTTPRequest
      */
-    protected function initializeHTTPRequest() {
-        return new HTTPRequest();
+    public static function initializeHTTPRequest(IContainer $container) {
+        $container->set('HTTPRequest', function() {
+            return new HTTPRequest();
+        }
     }
 
     /**
@@ -129,7 +135,7 @@ class DefaultBootstrap extends Bootstrap {
     }
 
     /**
-     * @return \HomeFramework\manager\EntityManager
+     * @:return \HomeFramework\manager\EntityManager
      */
     protected function initializePDOEntityManager() {
         $config = $this->get('DefaultConfiguration');

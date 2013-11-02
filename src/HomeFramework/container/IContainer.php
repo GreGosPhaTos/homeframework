@@ -1,57 +1,42 @@
 <?php
-/**
- * Created by JetBrains PhpStorm.
- * User: Adrien
- * Date: 23/07/13
- * Time: 21:19
- * To change this template use File | Settings | File Templates.
- */
-
 namespace HomeFramework\container;
 
-interface IContainer {
+/**
+ * Lazy Loading Interface Container 
+ * @package HomeFramework\container
+ */
+Interface IContainer {
 
     /**
+     * Return the instance
+     *
      * @param string $serviceName
      * @return mixed
+     * @throws \RuntimeException
      */
-    public function get($serviceName);
-
+    public function get($serviceName, $forceInstance = false);
+    
     /**
-     * Add a service to the container
+     * Clear Cache
+     * 
+     * @return void
      *
-     * @param Service $service
-     * @return mixed
-     */
-    public function setService(Service $service);
-
+     */ 
+    public clearCache();
+    
     /**
-     * Returns the Service.
+     * Set the cache 
      *
-     * @return Service
+     * @param string $serviceName
+     * return void
      */
-    public function getService();
-
+    private function cache($serviceName) 
+    
     /**
+     * Set a new service to the container
      *
-     * @return mixed
+     * @param \HomeFramework\container\Service $service
+     * @return void
      */
-    public function fetchService();
-
-    /**
-     * Attach a new subscriber
-     *
-     * @param IContainerSubscriber $subscriber
-     * @return mixed
-     */
-    public function subscribe(IContainerSubscriber $subscriber);
-
-    /**
-     * UnSubscribe a subscriber
-     *
-     * @param IContainerSubscriber $subscriber
-     * @return mixed
-     */
-    public function unSubscribe(IContainerSubscriber $subscriber);
-
+    public function set($serviceName, $callback);
 }

@@ -14,7 +14,7 @@ abstract class Application extends ContainerAware {
     /**
      * @var string
      */
-    protected $name;
+    protected $name = "";
 
     protected $logger;
 
@@ -23,10 +23,9 @@ abstract class Application extends ContainerAware {
      */
     public function __construct() {
         $this->setContainer(new Container());
-	    $this->name = "";
 
         // default Bootstrap
-        $this->container->subscribe(new DefaultBootstrap());
+        $this->initializeBootstrap(new DefaultBootstrap()); 
         $this->logger = $this->container->get("logger");
 	}
 
@@ -86,4 +85,12 @@ abstract class Application extends ContainerAware {
     public function getContainer() {
 	    return $this->container;
 	}
+
+    /**
+     *
+     */
+    final protected function initializeBootStrap (IBootstrap $bootstrap) {
+        $bootstrap->setContainer($this->container);
+        $bootstrap->init();
+    }
 }
