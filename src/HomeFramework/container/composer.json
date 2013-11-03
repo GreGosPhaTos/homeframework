@@ -1,5 +1,6 @@
 {
     "autoload": {
         "psr-0": { "HomeFramework\\container\\": "" }
-    }
+    },
+    "target-dir": "HomeFramework/container"
 }
