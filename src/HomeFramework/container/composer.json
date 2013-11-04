@@ -1,6 +1,11 @@
 {
+    "name": "homeframework/container",
+    "type": "library",
+    "description": "HomeFramework Container Component",
+    "keywords": [],
     "autoload": {
         "psr-0": { "HomeFramework\\container\\": "" }
     },
-    "target-dir": "HomeFramework/container"
+    "target-dir": "HomeFramework/container",
+    "minimum-stability": "dev"
 }

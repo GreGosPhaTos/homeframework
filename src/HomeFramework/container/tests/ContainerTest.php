@@ -6,7 +6,7 @@ use HomeFramework\container\Container;
 class ContainerTest extends \PHPUnit_Framework_TestCase {
 
     /**
-     * @covers Container
+     * @covers \HomeFramework\container\Container::get()
      */
     public function testContainer() {
         $container = new Container();
@@ -24,9 +24,27 @@ class ContainerTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals($cache, array('foo' => $callback()));
     }
 
+
     /**
-     * @covers Container
-     * @covers
+     * @covers \HomeFramework\container\Container::get()
+     * 
+     * @expectedException \HomeFramework\container\exception\ContainerInvalidArgumentException
+     */
+    public function testGetInvalidServiceName() {
+        $container = new Container();
+        $container->set('foo', $callback = function() {
+            $instance = new \stdClass();
+            $instance->bar = 'foobar';
+
+            return $instance;
+        });
+
+        $container->get('bar');
+    }
+
+
+    /**
+     * @covers \HomeFramework\container\Container
      */
     public function testContainerForceInstance() {
         $container = new Container();
@@ -58,7 +76,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers Container::clearCache
+     * @covers \HomeFramework\container\Container::clearCache()
      */
     public function testClearCache() {
         $container = new Container();
@@ -80,7 +98,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase {
     }
 
     /**
-     *  @covers Container::set()
+     * @covers \HomeFramework\container\Container::set()
      *
      * @expectedException \HomeFramework\container\exception\ContainerInvalidArgumentException
      */
@@ -90,12 +108,20 @@ class ContainerTest extends \PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers Container::set()
+     * @covers \HomeFramework\container\Container::set()
      *
      * @expectedException \HomeFramework\container\exception\ContainerInvalidArgumentException
      */
     public function testSetInvalidCallback() {
         $container = new Container();
         $container->set('foo', 'bar');
+    }
+
+    /**
+     * @covers \HomeFramework\container\Container::hasService()
+     */
+    public function testHasService() {
+        $container = new Container();
+        $this->assertFalse($container->hasService('foobar'));
     }
 }
