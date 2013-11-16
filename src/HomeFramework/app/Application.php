@@ -15,7 +15,6 @@ abstract class Application extends ContainerAware {
      * @var string
      */
     protected $name = "";
-
     protected $logger;
 
     /**
@@ -23,10 +22,7 @@ abstract class Application extends ContainerAware {
      */
     public function __construct() {
         $this->setContainer(new Container());
-
-        // default Bootstrap
-        $this->initializeBootstrap(new DefaultBootstrap()); 
-        $this->logger = $this->container->get("logger");
+        $this->addBootStrap(new DefaultBootstrap());
 	}
 
     /**
@@ -34,7 +30,8 @@ abstract class Application extends ContainerAware {
      * @throws \RuntimeException
      * @return void
      */
-    protected function beforeRun() {
+    protected function before() {
+        $this->logger = $this->container->get("Logger");
         // set the application name in the config
         if (is_null($this->getName())) throw new \RuntimeException ("Application must have a name.");
         $config = $this->container->get("DefaultConfiguration");
@@ -47,7 +44,7 @@ abstract class Application extends ContainerAware {
     /**
      * Application stops
      */
-    protected function shutDown() {
+    protected function after() {
         $this->logger->info("### Application " .$this->getName() . " stops");
         $this->logger->debug("At Stop -- Memory Usage : " . memory_get_usage());
     }
@@ -57,9 +54,9 @@ abstract class Application extends ContainerAware {
      * @return void
      */
     final public function run() {
-        $this->beforeRun();
+        $this->before();
         FrontDispatcher::dispatch($this->container);
-        $this->shutDown();
+        $this->after();
 	}
 
     /**
@@ -89,8 +86,9 @@ abstract class Application extends ContainerAware {
     /**
      *
      */
-    final protected function initializeBootStrap (IBootstrap $bootstrap) {
+    public function addBootStrap (Bootstrap $bootstrap) {
         $bootstrap->setContainer($this->container);
-        $bootstrap->init();
+        // TODO Now ?
+        $bootstrap->boot();
     }
 }

@@ -15,7 +15,7 @@ class FrontDispatcher {
     static public function dispatch(IContainer $container) {
         try {
             $appName = $container
-                ->get('defaultConfiguration')
+                ->get('DefaultConfiguration')
                 ->get('applicationName');
 
             $router  = $container->get('Router');
@@ -34,7 +34,7 @@ class FrontDispatcher {
             $controller->execute();
         } catch (\Exception $e) {
             $container
-                ->get('logger')
+                ->get('Logger')
                 ->warn("FrontDispatcher ".$e->getMessage());
             $HTTPResponse = $container->get('HTTPResponse');
             $HTTPResponse->setBody("Not Found");

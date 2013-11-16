@@ -25,12 +25,12 @@ class Container implements IContainer {
      *
      * @param string $serviceName
      * @param bool $forceInstance
-     * @throws ContainerException
+     * @throws ContainerInvalidArgumentException
      * @return mixed
      */
     public function get($serviceName, $forceInstance = false) {
         if (!$this->hasService($serviceName)) {
-            throw new ContainerException("Service [".$serviceName."] doesn't exists");
+            throw new ContainerInvalidArgumentException("Service [".$serviceName."] doesn't exists");
         } else if (true === $forceInstance || !isset($this->cache[$serviceName])) {
             $this->cache($serviceName);
         }
