@@ -1,13 +1,12 @@
 <?php
 namespace HomeFramework\app;
 
-use HomeFramework\container\Bootstrap,
-    HomeFramework\http\HTTPResponse,
+use HomeFramework\http\HTTPResponse,
     HomeFramework\http\XMLResponse,
     HomeFramework\http\JSONResponse,
     HomeFramework\http\HTTPRequest,
-    HomeFramework\bundles\Logger;
-
+    HomeFramework\bundles\Logger,
+    HomeFramework\config\Configurator;
 
 /**
  * Class Bootstrap the default Bootstrap
@@ -15,32 +14,51 @@ use HomeFramework\container\Bootstrap,
  */
 class DefaultBootstrap extends Bootstrap {
 
+    public function boot() {
+        $this->initializeDefaultConfiguration();
+        $this->initializeLogger();
+        $this->initializeHTTPRequest();
+        $this->initializeHTTPResponse();
+        $this->initializeJSONResponse();
+        $this->initializeRouter();
+        $this->initializeRouterFormatter();
+        $this->initializePathReader();
+    }
+
     /**
      * @return \HomeFramework\http\HTTPRequest
      */
     protected function initializeHTTPRequest() {
-        return new HTTPRequest();
+        $this->container->set('HTTPRequest', function() {
+            return new HTTPRequest();
+        });
     }
 
     /**
      * @return HTTPResponse
      */
     protected function initializeHTTPResponse() {
-        return new HTTPResponse();
+        $this->container->set('HTTPResponse', function() {
+            return new HTTPResponse();
+        });
     }
 
     /**
      * @return JSONResponse
      */
     protected function initializeJSONResponse() {
-        return new JSONResponse();
+        $this->container->set('JSONResponse', function() {
+            return new JSONResponse();
+        });
     }
 
     /**
      * @return XMLResponse
      */
     protected function initializeXMLResponse() {
-        return new XMLResponse();
+        $this->container->set('XMLResponse', function() {
+            return new XMLResponse();
+        });
     }
 
     /**
@@ -48,15 +66,18 @@ class DefaultBootstrap extends Bootstrap {
      * @throws \Exception
      */
     protected function initializeLogger() {
-        $config = $this->get('DefaultConfiguration');
-        $loggerConfig = $config->get('logger');
+        $container = $this->container;
+        $container->set('Logger', function() use ($container) {
+            $config = $container->get('DefaultConfiguration');
+            $loggerConfig = $config->get('logger');
 
-        try {
-            return $logger = new Logger($loggerConfig["path"]);
-        } catch (\Exception $e) {
-            var_dump($loggerConfig["path"]);
-            throw new \Exception("Logger initialisation failed with message : " . $e->getMessage());
-        }
+            try {
+                return $logger = new Logger($loggerConfig["path"]);
+            } catch (\Exception $e) {
+                var_dump($loggerConfig["path"]);
+                throw new \Exception("Logger initialisation failed with message : " . $e->getMessage());
+            }
+        });
     }
 
     /**
@@ -64,11 +85,14 @@ class DefaultBootstrap extends Bootstrap {
      * @return \HomeFramework\routing\Router
      */
     protected function initializeRouter() {
-        $router = new \HomeFramework\routing\Router();
-        $router->setFormatter($this->get('RouterFormatter'));
-        $router->setHTTPRequest($this->get('HTTPRequest'));
+        $container = $this->container;
+        $container->set('Router', function() use ($container) {
+            $router = new \HomeFramework\routing\Router();
+            $router->setFormatter($container->get('RouterFormatter'));
+            $router->setHTTPRequest($container->get('HTTPRequest'));
 
-        return $router;
+            return $router;
+        });
     }
 
     /**
@@ -76,23 +100,26 @@ class DefaultBootstrap extends Bootstrap {
      * @return \HomeFramework\formatter\XMLFormatter
      */
     protected function initializeRouterFormatter() {
-        $config = $this->get('DefaultConfiguration');
-        $routeConfig = $config->get('route');
-        $replacement = array('appName' => $config->get('applicationName'));
-        $configReader = $this->get($config->get('reader'));
-        if (!isset($routeConfig['file'])) {
-            $message = "Route config file is not set.";
-            $this->get("logger")
-                 ->error("Bootstrap " . $message);
-            throw new \Exception($message);
-        }
+        $container = $this->container;
+        $container->set('RouterFormatter', function() use ($container) {
+            $config = $container->get('DefaultConfiguration');
+            $routeConfig = $config->get('route');
+            $replacement = array('appName' => $config->get('applicationName'));
+            $configReader = $container->get($config->get('reader'));
+            if (!isset($routeConfig['file'])) {
+                $message = "Route config file is not set.";
+                $this->get("logger")
+                    ->error("Bootstrap " . $message);
+                throw new \Exception($message);
+            }
 
-        $routeConfig['file'] = $configReader->read($replacement, $routeConfig['file']);
-        $config->set('route', $routeConfig);
-        $routerFormatterClass = "\\HomeFramework\\formatter\\".$routeConfig['parser']['format']."Formatter";
-        $routerFormatter = new $routerFormatterClass(file_get_contents($routeConfig['file']));
+            $routeConfig['file'] = $configReader->read($replacement, $routeConfig['file']);
+            $config->set('route', $routeConfig);
+            $routerFormatterClass = "\\HomeFramework\\formatter\\".$routeConfig['parser']['format']."Formatter";
+            $routerFormatter = new $routerFormatterClass(file_get_contents($routeConfig['file']));
 
-        return $routerFormatter;
+            return $routerFormatter;
+        });
     }
 
     /**
@@ -100,52 +127,65 @@ class DefaultBootstrap extends Bootstrap {
      * @return \HomeFramework\formatter\XMLFormatter
      */
     protected function initializeDefaultConfiguration() {
-        $filename = __DIR__."/../../../../../apps/app.xml";
-        if (!is_file($filename)) {
-            $message = "Application config file is not set.";
-            $this->get("logger")->error("Bootstrap " . $message);
-            throw new \Exception($message);
-        }
+        $container = $this->container;
+        $container->set('DefaultConfiguration', function() use ($container) {
+            $filename = __DIR__."/../../../../../apps/app.xml";
 
-        $config = new \HomeFramework\config\Configurator(
-            new \HomeFramework\formatter\XMLFormatter(file_get_contents($filename))
-        );
+            if (!is_file($filename)) {
+                $message = "Application config file is not set.";
+                throw new \Exception($message);
+            }
 
-        return $config->configure();
+            $config = new \HomeFramework\config\Configurator(
+                new \HomeFramework\formatter\XMLFormatter(file_get_contents($filename))
+            );
+
+            return $config->configure();
+        });
     }
 
     /**
      * @return \HomeFramework\manager\EntityManager
      */
     protected function initializeEntityManager() {
-        $config = $this->get('DefaultConfiguration');
-        $emConfig = $config->get('entityManager');
-        $api = $emConfig['api'];
-        $className = $api."Factory";
-        $method = "get".$emConfig['sgbd']."Connexion";
-        $dao = $className::$method;
+        $container = $this->container;
+        $container->set('EntityManager', function() use ($container) {
+            $config = $container->get('DefaultConfiguration');
+            $emConfig = $config->get('entityManager');
+            $api = $emConfig['api'];
+            $className = $api."Factory";
+            $method = "get".$emConfig['sgbd']."Connexion";
+            $dao = $className::$method;
 
-        return new \HomeFramework\manager\EntityManager($api, $dao);
+            return new \HomeFramework\manager\EntityManager($api, $dao);
+        });
     }
 
     /**
      * @return \HomeFramework\manager\EntityManager
      */
     protected function initializePDOEntityManager() {
-        $config = $this->get('DefaultConfiguration');
-        $emConfig = $config->get('entityManager');
-        $api = 'PDO';
-        $className = $api."Factory";
-        $method = "get".$emConfig['sgbd']."Connexion";
-        $dao = $className::$method;
+        $container = $this->container;
+        $container->set('PDOEntityManager', function() use ($container) {
+            $config = $container->get('DefaultConfiguration');
+            $emConfig = $config->get('entityManager');
+            $api = 'PDO';
+            $className = $api."Factory";
+            $method = "get".$emConfig['sgbd']."Connexion";
+            $dao = $className::$method;
 
-        return new \HomeFramework\manager\EntityManager($api, $dao);
+            return new \HomeFramework\manager\EntityManager($api, $dao);
+        });
     }
 
     /**
-     * @return \HomeFramework\reader\ConfigPathReaderÇ
+     * @return \HomeFramework\reader\ConfigPathReader
      */
     protected function initializePathReader() {
-        return new \HomeFramework\reader\PathReader();
+        $this->container->set('PathReader', function() {
+            return new \HomeFramework\reader\PathReader();
+        });
     }
+
+
 }

@@ -1,97 +1,96 @@
 <?php
 namespace HomeFramework\container;
 
+use HomeFramework\container\exception\ContainerException,
+    HomeFramework\container\exception\ContainerInvalidArgumentException;
+
 /**
- * Class Container The dynamic objects handler
+ * Lazy Loading Container
  * @package HomeFramework\container
  */
 class Container implements IContainer {
+    
+    /**
+     * @var array
+     */
+    private $container = array();
 
     /**
      * @var array
      */
-    private $subscribers = array();
+    private $cache = array();
 
     /**
-     * @var Service
-     */
-    private $service;
-
-    /**
-     * Dynamic getter
+     * Return the instance
      *
      * @param string $serviceName
+     * @param bool $forceInstance
+     * @throws ContainerInvalidArgumentException
      * @return mixed
-     * @throws \RuntimeException
      */
-    public function get($serviceName) {
-        $this->setService(new Service());
-        $this->service->setName($serviceName);
-        if ($this->fetchService()) {
-            return $this->service->getInstance();
+    public function get($serviceName, $forceInstance = false) {
+        if (!$this->hasService($serviceName)) {
+            throw new ContainerInvalidArgumentException("Service [".$serviceName."] doesn't exists");
+        } else if (true === $forceInstance || !isset($this->cache[$serviceName])) {
+            $this->cache($serviceName);
         }
 
-        throw new \RuntimeException ("Initialization of service " . $serviceName . " failed");
+        return $this->cache[$serviceName];
+    }
+
+    /**
+     * Clear Cache
+     * 
+     * @return void
+     *
+     */ 
+    public function clearCache() {
+        $this->cache = array();
+    }
+
+    /**
+     * Set the cache 
+     *
+     * @param string $serviceName
+     * return void
+     */
+    private function cache($serviceName) {
+        $callback = $this->container[$serviceName];
+        $this->cache[$serviceName] = $callback();
     }
 
     /**
      * Set a new service to the container
      *
-     * @param \HomeFramework\container\Service $service
+     * @param $serviceName
+     * @param $callback
+     * @throws ContainerInvalidArgumentException
+     *
      * @return void
      */
-    public function setService(Service $service) {
-        $this->service = $service;
+    public function set($serviceName, $callback) {
+        if (!is_string($serviceName)) {
+            throw new ContainerInvalidArgumentException("ServiceName must be a string given : [" . gettype($serviceName) . "]");
+        }
+
+        if (!is_callable($callback)) {
+            throw new ContainerInvalidArgumentException("Callback must be a callable function in service : [" . $serviceName . "]");
+        }
+
+        $this->container[$serviceName] = $callback;
     }
 
     /**
-     * Notify the subscribers
+     * Returns if the given service exists
      *
-     * @throws \RuntimeException
+     * @param $serviceName
      * @return bool
      */
-    public function fetchService() {
-        foreach ($this->subscribers as $subscriber) {
-            if ($subscriber->pushService($this)) {
-                return true;
-            }
+    public function hasService($serviceName) {
+        if (isset($this->container[$serviceName])) {
+            return true;
         }
 
-        throw new \RuntimeException("No service for " . $this->service->getName());
-    }
-
-    /**
-     * Returns the service
-     *
-     * @return Service
-     */
-    public function getService() {
-        return $this->service;
-    }
-
-    /**
-     * Attach a new subscriber
-     *
-     * @param IContainerSubscriber $subscriber
-     * @return mixed|void
-     */
-    public function subscribe(IContainerSubscriber $subscriber) {
-        if (isset($this->subscribers[get_class($subscriber)]) && $this->subscribers[get_class($subscriber)] === $subscriber) {
-            return;
-        }
-
-        $this->subscribers[get_class($subscriber)] = $subscriber;
-    }
-
-    /**
-     * Detach a subscriber
-     *
-     * @param IContainerSubscriber $subscriber
-     * @return mixed|void
-     */
-    public function unSubscribe(IContainerSubscriber $subscriber) {
-        if (isset($this->subscribers[get_class($subscriber)])) {
-            unset($this->subscribers[get_class($subscriber)]);
-        }
+        return false;
     }
 }
